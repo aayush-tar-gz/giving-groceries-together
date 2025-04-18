@@ -4,9 +4,8 @@ from flask import Blueprint, request, jsonify, current_app
 from flask_security.utils import hash_password, verify_password, login_user, logout_user
 from flask_jwt_extended import create_access_token
 from flask_security import roles_accepted, roles_required
-
+from sqlalchemy.exc import IntegrityError
 # Import db and user_datastore initialized in __init__.py
-from . import db, user_datastore
 
 # Import models
 from .models import User, Role
@@ -16,6 +15,7 @@ auth_bp = Blueprint("auth", __name__, url_prefix="/")
 
 @auth_bp.route("/sign-up", methods=["POST"])
 def sign_up():
+    print(f'data: {request.get_json()}')
     data = request.get_json()
     if not data or not all(
         key in data
@@ -30,19 +30,19 @@ def sign_up():
     contact = data["contact"].strip()
     role_name = data["role"].strip().capitalize()
 
-    if user_datastore.find_user(email=email):
+    if User.query.filter_by(email=email).first():
         return jsonify({"error": "Email address is already registered"}), 409
 
     valid_roles = ["Retailer", "NGO", "Farmer", "Admin"]
     if role_name not in valid_roles:
         return jsonify({"error": f"Invalid role: {role_name}"}), 400
 
-    role = user_datastore.find_role(role_name)
+    role = Role.query.filter_by(name=role_name).first()
     if not role:
         return jsonify({"error": f"Role '{role_name}' not found"}), 400
 
     try:
-        user = user_datastore.create_user(
+        user = User(
             email=email,
             password=hash_password(password),
             active=True,
@@ -50,12 +50,16 @@ def sign_up():
             pincode=pincode,
             contact=contact,
         )
-        user_datastore.add_role_to_user(user, role)
+        user.roles.append(role)
+        db.session.add(user)
         db.session.commit()
         return jsonify({"message": "User created successfully"}), 201
+    except IntegrityError as e:
+        db.session.rollback()
+        return jsonify({"error": "An error occurred, the user might be already registered"}), 500
     except Exception as e:
         db.session.rollback()
-        current_app.logger.error(f"User creation failed: {e}")
+        current_app.logger.error(f"User creation failed: {e}, data received {request.get_json()}")
         return jsonify({"error": "An error occurred during registration"}), 500
 
 
@@ -68,7 +72,7 @@ def login():
     email = data["email"].strip()
     password = data["password"]
 
-    user = user_datastore.find_user(email=email)
+    user = User.query.filter_by(email=email).first()
 
     if user and verify_password(password, user.password):
         login_user(user)
