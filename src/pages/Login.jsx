@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useAuth } from '../context/AuthContext';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { toast } from 'sonner';
 
@@ -11,7 +11,7 @@ const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const { login, loading } = useAuth();
-  const navigate = useNavigate();
+   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -22,11 +22,19 @@ const Login = () => {
     }
 
     try {
-      await login(email, password);
-      toast.success('Login successful!');
-      navigate('/dashboard');
+       const response = await login(email, password);
+       localStorage.setItem('token', response.token);
+      
+
+      const user = response.user;
+      
+        useAuth().setUser(user)
+       toast.success('Login successful!');
+        navigate('/dashboard');
     } catch (error) {
-      console.error('Login error:', error);
+      if (error.error) {
+            toast.error(error.error);
+        }
     }
   };
 

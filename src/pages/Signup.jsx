@@ -40,12 +40,17 @@ const Signup = () => {
       return;
     }
 
-    try {
-      await signup(formData);
-      toast.success('Account created successfully!');
-      navigate('/dashboard');
-    } catch (error) {
-      console.error('Signup error:', error);
+     try {
+      const response = await signup(formData);
+      if(response.error){
+        toast.error(response.error);
+      }else{
+         toast.success('Account created successfully!');
+         navigate('/dashboard');
+      }
+     
+    } catch (err) {
+       toast.error(err.error);
     }
   };
 
