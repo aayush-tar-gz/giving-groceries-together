@@ -1,15 +1,13 @@
 
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { api } from '../services/api';
+import { toast } from "sonner";
 
-// Create Auth Context
 const AuthContext = createContext();
 
-// Auth Provider Component
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
   // Check for existing session on load
   useEffect(() => {
@@ -21,7 +19,7 @@ export const AuthProvider = ({ children }) => {
         }
       } catch (err) {
         console.error('Auth check failed:', err);
-        setError('Failed to restore session');
+        toast.error('Failed to restore session');
       } finally {
         setLoading(false);
       }
@@ -33,7 +31,6 @@ export const AuthProvider = ({ children }) => {
   // Login function
   const login = async (email, password) => {
     setLoading(true);
-    setError(null);
     try {
       const response = await api.login(email, password);
       setUser(response.data.user);
@@ -41,7 +38,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('token', response.data.token);
       return response.data;
     } catch (err) {
-      setError(err.error || 'Login failed');
+      toast.error(err.error || 'Login failed');
       throw err;
     } finally {
       setLoading(false);
@@ -51,13 +48,12 @@ export const AuthProvider = ({ children }) => {
   // Signup function
   const signup = async (userData) => {
     setLoading(true);
-    setError(null);
     try {
       await api.signup(userData);
-      // Automatically log in after signup
+      // After successful signup, automatically log in
       return await login(userData.email, userData.password);
     } catch (err) {
-      setError(err.error || 'Signup failed');
+      toast.error(err.error || 'Signup failed');
       throw err;
     } finally {
       setLoading(false);
@@ -71,11 +67,9 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('token');
   };
 
-  // Auth context value
   const value = {
     user,
     loading,
-    error,
     login,
     signup,
     logout,
@@ -87,7 +81,6 @@ export const AuthProvider = ({ children }) => {
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
-// Custom hook to use auth context
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {

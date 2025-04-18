@@ -21,6 +21,7 @@ const Signup = () => {
     role: 'retailer',
     termsAccepted: false
   });
+  
   const { signup, loading } = useAuth();
   const navigate = useNavigate();
 
@@ -49,7 +50,7 @@ const Signup = () => {
       toast.success('Account created successfully!');
       navigate('/dashboard');
     } catch (error) {
-      toast.error(error.error || 'Signup failed');
+      console.error('Signup error:', error);
     }
   };
 
