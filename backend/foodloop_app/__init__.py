@@ -1,4 +1,3 @@
-# foodloop_app/__init__.py
 
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
@@ -28,6 +27,11 @@ def create_app():
 
     # Register blueprints
     from .auth_routes import auth_bp
+    from .retailer_routes import retailer_bp
+    from .ngo_routes import ngo_bp
+    
     app.register_blueprint(auth_bp)
+    app.register_blueprint(retailer_bp)
+    app.register_blueprint(ngo_bp)
 
     return app
