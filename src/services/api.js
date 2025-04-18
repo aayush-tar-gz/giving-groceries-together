@@ -25,7 +25,6 @@ export const api = {
   },
 
   signup: async (userData) => {
-    try {
       const response = await fetch(`${API_BASE_URL}/sign-up`, {
         method: 'POST',
         headers: {
@@ -40,9 +39,6 @@ export const api = {
       }
       
       return await response.json();
-    } catch (error) {
-      throw { error: error.message };
-    }
   },
 
   // Retailer API

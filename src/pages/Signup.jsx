@@ -40,8 +40,9 @@ const Signup = () => {
       return;
     }
 
+    const { termsAccepted, ...apiData } = formData;
      try {
-      const response = await signup(formData);
+      const response = await signup(apiData);
       if(response.error){
         toast.error(response.error);
       }else{
