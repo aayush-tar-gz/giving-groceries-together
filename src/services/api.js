@@ -1,6 +1,6 @@
 
-const API_BASE_URL = 'http://localhost:3000'; // adjust this to match your API URL
-
+const API_BASE_URL = 'http://127.0.0.1:3000'; // adjust this to match your API URL
+  
 export const api = {
   // Authentication
   login: async (email, password) => {
