@@ -110,11 +110,11 @@ const SignupForm = ({ formData, handleChange, handleSubmit, handleRoleChange, lo
           className="flex space-x-4"
         >
           <div className="flex items-center space-x-2">
-            <RadioGroupItem value="retailer" id="retailer" />
+            <RadioGroupItem value="Retailer" id="retailer" />
             <Label htmlFor="retailer">Retailer</Label>
           </div>
           <div className="flex items-center space-x-2">
-            <RadioGroupItem value="ngo" id="ngo" />
+            <RadioGroupItem value="NGO" id="ngo" />
             <Label htmlFor="ngo">NGO</Label>
           </div>
         </RadioGroup>
