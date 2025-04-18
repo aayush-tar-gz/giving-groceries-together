@@ -1,127 +1,179 @@
 
-// Mock API Service
-const mockDelay = 500; // Simulate network delay
+const API_BASE_URL = 'http://localhost:3000'; // adjust this to match your API URL
 
-// Mock User Data
-const users = [
-  { id: 1, email: 'retailer@example.com', password: 'password', role: 'retailer', city: 'New York', pincode: '10001', contact: '123-456-7890' },
-  { id: 2, email: 'ngo@example.com', password: 'password', role: 'ngo', city: 'New York', pincode: '10001', contact: '123-456-7891' }
-];
-
-// Mock Food Items
-const foodItems = [
-  { id: 1, ownerId: 1, name: 'Bread', quantity: 10, addedDate: '2023-04-15', expiryDate: '2023-04-20', status: 'expired' },
-  { id: 2, ownerId: 1, name: 'Milk', quantity: 5, addedDate: '2023-04-16', expiryDate: '2023-04-22', status: 'warning' },
-  { id: 3, ownerId: 1, name: 'Apples', quantity: 20, addedDate: '2023-04-17', expiryDate: '2023-04-30', status: 'good' },
-];
-
-// Mock Food Requests
-const foodRequests = [
-  { id: 1, ngoId: 2, ngoName: 'Food Bank NYC', foodName: 'Canned Goods', quantity: 15, neededByDate: '2023-04-25', urgency: 'high' },
-  { id: 2, ngoId: 2, ngoName: 'Food Bank NYC', foodName: 'Fresh Vegetables', quantity: 10, neededByDate: '2023-04-21', urgency: 'medium' },
-];
-
-// Mock API Functions
 export const api = {
   // Authentication
   login: async (email, password) => {
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        const user = users.find(u => u.email === email && u.password === password);
-        if (user) {
-          const { password, ...userWithoutPassword } = user;
-          resolve({ 
-            success: true, 
-            data: { 
-              user: userWithoutPassword, 
-              token: 'mock-jwt-token' 
-            } 
-          });
-        } else {
-          reject({ success: false, error: 'Invalid email or password' });
-        }
-      }, mockDelay);
-    });
+    try {
+      const response = await fetch(`${API_BASE_URL}/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Login failed');
+      }
+      
+      return await response.json();
+    } catch (error) {
+      throw { error: error.message };
+    }
   },
 
   signup: async (userData) => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        // In a real app, we would validate and store the user
-        const newUser = {
-          id: users.length + 1,
-          ...userData
-        };
-        users.push(newUser);
-        resolve({ success: true, message: 'User created successfully' });
-      }, mockDelay);
-    });
+    try {
+      const response = await fetch(`${API_BASE_URL}/sign-up`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userData),
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Signup failed');
+      }
+      
+      return await response.json();
+    } catch (error) {
+      throw { error: error.message };
+    }
   },
 
   // Retailer API
   getRetailerInventory: async () => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({ success: true, data: foodItems });
-      }, mockDelay);
-    });
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_BASE_URL}/retailers/inventory`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to fetch inventory');
+      }
+      
+      return await response.json();
+    } catch (error) {
+      throw { error: error.message };
+    }
   },
 
   addInventoryItem: async (item) => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const newItem = {
-          id: foodItems.length + 1,
-          ownerId: 1, // Mock current user id
-          ...item,
-          status: 'good',
-          addedDate: new Date().toISOString().split('T')[0]
-        };
-        foodItems.push(newItem);
-        resolve({ success: true, data: newItem });
-      }, mockDelay);
-    });
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_BASE_URL}/retailers/add_item`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(item),
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to add item');
+      }
+      
+      return await response.json();
+    } catch (error) {
+      throw { error: error.message };
+    }
   },
 
   getFoodRequests: async () => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({ success: true, data: foodRequests });
-      }, mockDelay);
-    });
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_BASE_URL}/retailers/requested_food`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to fetch food requests');
+      }
+      
+      return await response.json();
+    } catch (error) {
+      throw { error: error.message };
+    }
   },
 
   // NGO API
   getNearbyFoodListings: async () => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const availableFood = foodItems.filter(item => item.status !== 'expired');
-        resolve({ success: true, data: availableFood });
-      }, mockDelay);
-    });
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_BASE_URL}/ngo/filtered_food`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to fetch food listings');
+      }
+      
+      return await response.json();
+    } catch (error) {
+      throw { error: error.message };
+    }
   },
 
   createFoodRequest: async (request) => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const newRequest = {
-          id: foodRequests.length + 1,
-          ngoId: 2, // Mock current user id
-          ngoName: 'Food Bank NYC',
-          ...request
-        };
-        foodRequests.push(newRequest);
-        resolve({ success: true, data: newRequest });
-      }, mockDelay);
-    });
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_BASE_URL}/ngo/request`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(request),
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to create food request');
+      }
+      
+      return await response.json();
+    } catch (error) {
+      throw { error: error.message };
+    }
   },
 
   getNgoRequests: async () => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const ngoRequests = foodRequests.filter(req => req.ngoId === 2);
-        resolve({ success: true, data: ngoRequests });
-      }, mockDelay);
-    });
-  }
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_BASE_URL}/ngo/my_requests`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to fetch NGO requests');
+      }
+      
+      return await response.json();
+    } catch (error) {
+      throw { error: error.message };
+    }
+  },
 };
