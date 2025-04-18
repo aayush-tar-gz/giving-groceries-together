@@ -1,4 +1,3 @@
-# models.py (assumed content)
 
 from flask_sqlalchemy import SQLAlchemy
 from flask_security import UserMixin, RoleMixin
@@ -7,7 +6,11 @@ from sqlalchemy import Table, Column, Integer, ForeignKey
 
 db = SQLAlchemy()
 
+# Create metadata object
+metadata = db.metadata
+
 roles_users = Table('roles_users',
+    metadata,
     db.Column('user_id', Integer(), ForeignKey('user.id')),
     db.Column('role_id', Integer(), ForeignKey('role.id')))
 

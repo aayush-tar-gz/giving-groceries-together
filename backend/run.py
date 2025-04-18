@@ -14,6 +14,7 @@ def init_roles():
                 role = Role(name=role_name)
                 db.session.add(role)
         db.session.commit()
+        print("Database initialized with roles.")
 
 if __name__ == "__main__":
     init_roles()

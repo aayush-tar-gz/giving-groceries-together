@@ -7,7 +7,11 @@ from datetime import datetime
 
 db = SQLAlchemy()
 
+# Create metadata object
+metadata = db.metadata
+
 roles_users = Table('roles_users',
+    metadata,
     db.Column('user_id', Integer(), ForeignKey('user.id')),
     db.Column('role_id', Integer(), ForeignKey('role.id')))
 
